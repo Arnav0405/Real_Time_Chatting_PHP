@@ -1,26 +1,24 @@
 <?php
-
-require_once(dirname(__FILE__) ."../includes/db.php");
-
+require_once("../includes/db.php");
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents(dirname(__FILE__) .'php://input'), true);
+    // Get form data
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
 
-    $username = trim($data['username']);
-    $password = trim($data['password']);
-
-    if (empty($username) || empty($password)) {
-        echo json_encode(['error' => 'Username and password are required']);
+    if (empty($username) || empty($email) || empty($password)) {
+        echo $password;
+        echo json_encode(['status' => 'error', 'message' => 'All fields are required.']);
         exit;
     }
-
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        $statement = $pdo->prepare("SELECT id, username, password FROM users WHERE username = :username");
-        $statement->execute(['username' => $username]);
+        $statement = $pdo->prepare("SELECT * FROM users WHERE username = :username OR email = :email");
+        $statement->execute(['username' => $username, 'email' => $email]);
         $user = $statement->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
@@ -36,3 +34,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     echo json_encode(['error' => 'Invalid request method']);
 }
+?>
