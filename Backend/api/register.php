@@ -3,35 +3,33 @@ require_once("../includes/db.php");
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
 
-    if (empty($username) || empty($email) || empty($password)) {
-        echo $password;
-        echo json_encode(['status' => 'error', 'message' => 'All fields are required.']);
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['username']) || !isset($data['email']) || !isset($data['password'])) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Missing required fields']);
         exit;
     }
+    // Get form data
+    $username   = trim($data['username']);
+    $email      = trim($data['email']);
+    $password   = trim($data['password']);
 
+    // echo json_encode(["username" => $username, "emai" => $email, "password" => $password]);
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        $statement = $pdo->prepare("SELECT * FROM users WHERE username = :username OR email = :email");
-        $statement->execute(['username' => $username, 'email' => $email]);
-        $user = $statement->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            echo json_encode(['message' => 'Login successful']);
-        } else {
-            echo json_encode(['error' => 'Invalid credentials']);
-        }
+        $statement = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (:username, :email, :password)");
+        $statement->execute(['username' => $username, 'email' => $email, 'password' => $hashed_password]);
+        
+        http_response_code(201);
+        echo json_encode(["message" => "User Succesfully Registered"]);
     } catch (PDOException $e) {
-        echo json_encode(['error' => 'Username already exists']);
+        http_response_code(409);
+        echo json_encode(['error' => 'Username or email already exists']);
     }
 } else {
+    http_response_code(405);
     echo json_encode(['error' => 'Invalid request method']);
 }
 ?>
