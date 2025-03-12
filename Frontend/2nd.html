@@ -1,542 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Enhanced Chat UI with Profile</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f0fdf4; /* Light green */
-      margin: 0;
-      padding: 0;
-    }
-    /* Top Navbar */
-    .top-navbar {
-      background-color: #2f855a; /* Dark green */
-      color: #fff;
-      padding: 0.75rem 1.25rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .top-navbar .navbar-brand {
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-    .top-navbar .account-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 2px solid #fff;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .top-navbar .account-icon:hover {
-      transform: scale(1.1);
-    }
-    .top-navbar .account-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    /* Main Layout */
-    .main-container {
-      height: calc(100vh - 60px);
-      display: flex;
-      overflow: hidden;
-    }
-    /* Sidebar */
-    .sidebar {
-      width: 30%;
-      max-width: 320px;
-      background-color: #fff;
-      border-right: 1px solid #e2e8f0;
-      overflow-y: auto;
-      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-      padding: 15px;
-    }
-    .sidebar .search-bar {
-      margin-bottom: 20px;
-    }
-    .sidebar .search-bar .input-group {
-      border-radius: 25px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .sidebar .search-bar .input-group .form-control {
-      border: none;
-      outline: none;
-      padding: 10px 15px;
-      font-size: 0.9rem;
-    }
-    .sidebar .search-bar .input-group .input-group-text {
-      background-color: #fff;
-      border: none;
-      padding: 0 15px;
-    }
-    .user-list .user-item {
-      padding: 12px 15px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      background-color: #f8fafc;
-    }
-    .user-list .user-item:hover {
-      background-color: #e6fffa;
-      transform: translateX(5px);
-    }
-    .user-item .avatar {
-      width: 40px;
-      height: 40px;
-      margin-right: 12px;
-      flex-shrink: 0;
-    }
-    .user-item .avatar img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #e2e8f0;
-    }
-    .user-item .user-details {
-      flex: 1;
-    }
-    .user-item .user-name {
-      font-weight: 500;
-      margin: 0;
-      color: #2d3748;
-    }
-    .user-item .user-status {
-      font-size: 0.85rem;
-      color: #718096;
-      margin: 0;
-    }
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 5px;
-    }
-    .status-online {
-      background-color: #38a169;
-    }
-    .status-offline {
-      background-color: #e53e3e;
-    }
-    /* Chat Area */
-    .chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: #fff;
-      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.05);
-    }
-    .chat-header {
-      padding: 15px 20px;
-      border-bottom: 1px solid #e2e8f0;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-    }
-    .chat-header .chat-user-avatar {
-      width: 45px;
-      height: 45px;
-      margin-right: 15px;
-      flex-shrink: 0;
-    }
-    .chat-header .chat-user-avatar img {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #e2e8f0;
-    }
-    .chat-header .chat-user-info {
-      display: flex;
-      flex-direction: column;
-    }
-    .chat-header .chat-user-name {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 0;
-      color: #2d3748;
-    }
-    .chat-header .chat-user-status {
-      font-size: 0.9rem;
-      color: #718096;
-      margin: 0;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background-color: #f7fafc;
-    }
-    .message {
-      max-width: 70%;
-      margin-bottom: 15px;
-      padding: 12px 16px;
-      border-radius: 20px;
-      position: relative;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      word-wrap: break-word;
-      animation: fadeIn 0.3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .message.sent {
-      background-color: #2f855a;
-      color: #fff;
-      margin-left: auto;
-      border-bottom-right-radius: 5px;
-    }
-    .message.received {
-      background-color: #edf2f7;
-      color: #2d3748;
-      margin-right: auto;
-      border-bottom-left-radius: 5px;
-    }
-    .message .timestamp {
-      font-size: 0.75rem;
-      margin-top: 5px;
-      opacity: 0.8;
-      display: block;
-      text-align: right;
-    }
-    /* Chat Input */
-    .chat-input {
-      padding: 15px 20px;
-      border-top: 1px solid #e2e8f0;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .chat-input .input-group {
-      flex: 1;
-    }
-    .chat-input .form-control {
-      border-radius: 25px;
-      padding: 12px 20px;
-      border: 1px solid #e2e8f0;
-      outline: none;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-      transition: border-color 0.2s ease;
-    }
-    .chat-input .form-control:focus {
-      border-color: #2f855a;
-    }
-    .chat-input .btn-send {
-      border: none;
-      background-color: #2f855a;
-      color: #fff;
-      border-radius: 50%;
-      width: 45px;
-      height: 45px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .chat-input .btn-send:hover {
-      background-color: #276749;
-      transform: scale(1.05);
-    }
-    .chat-input .btn-send:active {
-      transform: scale(0.95);
-    }
-    .chat-input .btn-upload {
-      border: none;
-      background-color: transparent;
-      color: #2f855a;
-      font-size: 1.25rem;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-    .chat-input .btn-upload:hover {
-      color: #276749;
-    }
-    /* Profile Modal */
-    .modal-content {
-      border-radius: 15px;
-      overflow: hidden;
-      border: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    .modal-header {
-      background-color: #2f855a;
-      color: #fff;
-      border-bottom: none;
-      padding: 20px;
-    }
-    .modal-title {
-      font-weight: 600;
-      font-size: 1.5rem;
-    }
-    .modal-body {
-      padding: 25px;
-    }
-    #currentDP {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 4px solid #e2e8f0;
-      margin: 0 auto 20px;
-      display: block;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      font-weight: 500;
-      color: #2d3748;
-    }
-    .btn-success {
-      background-color: #2f855a;
-      border: none;
-      padding: 12px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      border-radius: 25px;
-    }
-    .btn-success:hover {
-      background-color: #276749;
-      transform: translateY(-1px);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Chat App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-container {
+            width: 380px;
+            height: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Users List Section */
+        .users-section {
+            display: block;
+            height: 100%;
+        }
+
+        .search-bar {
+            padding: 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9edef;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            background: #f5f6f6;
+            font-size: 15px;
+            color: #3b4a54;
+        }
+
+        .users-list {
+            height: calc(700px - 90px);
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .user-item:hover {
+            background: #f5f6f6;
+            transform: translateX(5px);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00a884, #008f72);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            margin-right: 15px;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #111b21;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-status {
+            font-size: 13px;
+            color: #667781;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00a884;
+        }
+
+        .status-indicator.offline {
+            background: #d1d7db;
+        }
+
+        
+        .chat-section {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: #00a884;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #efeae2;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .received {
+            background: white;
+            align-self: flex-start;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .sent {
+            background: #d9fdd3;
+            align-self: flex-end;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #667781;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .input-container {
+            padding: 15px;
+            background: #f0f2f5;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .send-button {
+            background: #00a884;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
-  <!-- Top Navbar -->
-  <nav class="navbar top-navbar">
-    <a class="navbar-brand" href="#">Chat App</a>
-    <div class="account-icon" data-toggle="modal" data-target="#profileModal">
-      <img src="https://via.placeholder.com/40" alt="Account" />
-    </div>
-  </nav>
-
-  <div class="main-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="search-bar">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text bg-white border-0">
-              <i class="fas fa-search"></i>
-            </span>
-          </div>
-          <input type="text" id="searchUser" class="form-control" placeholder="Search users..." />
-        </div>
-      </div>
-      <div class="user-list" id="userList">
-        <!-- Sample User Items with profile pictures -->
-        <div class="user-item" data-username="Priya Sharma">
-          <div class="avatar">
-            <img src="https://via.placeholder.com/40?text=P" alt="Priya Sharma">
-          </div>
-          <div class="user-details">
-            <p class="user-name mb-1">Priya Sharma</p>
-            <p class="user-status mb-0">
-              <span class="status-dot status-online"></span> Online
-            </p>
-          </div>
-        </div>
-        <div class="user-item" data-username="Rahul Mehra">
-          <div class="avatar">
-            <img src="https://via.placeholder.com/40?text=R" alt="Rahul Mehra">
-          </div>
-          <div class="user-details">
-            <p class="user-name mb-1">Rahul Mehra</p>
-            <p class="user-status mb-0">
-              <span class="status-dot status-offline"></span> Offline • Last seen 10:30 AM
-            </p>
-          </div>
-        </div>
-        <div class="user-item" data-username="Neha Agarwal">
-          <div class="avatar">
-            <img src="https://via.placeholder.com/40?text=N" alt="Neha Agarwal">
-          </div>
-          <div class="user-details">
-            <p class="user-name mb-1">Neha Agarwal</p>
-            <p class="user-status mb-0">
-              <span class="status-dot status-online"></span> Online
-            </p>
-          </div>
-        </div>
-        <div class="user-item" data-username="Ankit Goyal">
-          <div class="avatar">
-            <img src="https://via.placeholder.com/40?text=A" alt="Ankit Goyal">
-          </div>
-          <div class="user-details">
-            <p class="user-name mb-1">Ankit Goyal</p>
-            <p class="user-status mb-0">
-              <span class="status-dot status-online"></span> Online
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Chat Area -->
-    <div class="chat-area">
-      <!-- Chat Header -->
-      <div class="chat-header">
-        <div class="chat-user-avatar">
-          <img src="https://via.placeholder.com/45" alt="User DP" id="chatUserDP">
-        </div>
-        <div class="chat-user-info">
-          <p class="chat-user-name" id="chatUserName">Select a user</p>
-          <p class="chat-user-status" id="chatUserStatus">Status info will appear here</p>
-        </div>
-      </div>
-      <!-- Chat Messages -->
-      <div class="chat-messages" id="chatMessages">
-        <!-- Messages will be appended here -->
-      </div>
-      <!-- Chat Input -->
-      <div class="chat-input">
-        <input type="text" id="messageInput" class="form-control" placeholder="Type a message..." disabled />
-        <button class="btn btn-send" id="sendBtn" disabled>
-          <i class="fas fa-paper-plane"></i>
-        </button>
-        <label for="fileInput" class="btn btn-upload mb-0">
-          <i class="fas fa-paperclip"></i>
-        </label>
-        <input type="file" id="fileInput" class="d-none" accept="image/*,application/pdf" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Profile Modal -->
-  <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="profileModalLabel">Update Profile</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Profile Picture Display -->
-          <div class="text-center mb-3">
-            <img id="currentDP" src="https://via.placeholder.com/100" alt="Profile Picture" class="rounded-circle">
-          </div>
-          <form id="profileForm">
-            <div class="form-group">
-              <label for="profilePicture">Change Profile Picture</label>
-              <input type="file" class="form-control-file" id="profilePicture" accept="image/*">
+    <div class="main-container">
+        
+        <div class="users-section" id="usersSection">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
             </div>
-            <button type="submit" class="btn btn-success btn-block">Save Changes</button>
-          </form>
+            <div class="users-list" id="usersList">
+              
+            </div>
         </div>
-      </div>
+
+        <!-- Chat Section -->
+        <div class="chat-section" id="chatSection">
+            <div class="chat-header">
+                <button class="back-button" id="backBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="user-avatar" id="chatAvatar"></div>
+                <div class="user-info">
+                    <div class="user-name" id="chatUserName"></div>
+                    <div class="user-status" id="chatUserStatus"></div>
+                </div>
+            </div>
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="input-container">
+                <input type="text" class="message-input" placeholder="Type a message..." id="messageInput">
+                <button class="send-button" id="sendBtn">Send</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- JS Libraries -->
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-  <script>
-    // Filter user list based on search input
-    $('#searchUser').on('keyup', function() {
-      var query = $(this).val().toLowerCase();
-      $('#userList .user-item').each(function() {
-        var name = $(this).data('username').toLowerCase();
-        $(this).toggle(name.indexOf(query) > -1);
-      });
-    });
+    <script>
+      
+        const users = [
+            { name: "Atul Pandey", online: true, avatar: "AP" },
+            { name: "Aarav Sharma", online: false, avatar: "AS" },
+            { name: "Vihaan Patel", online: true, avatar: "VP" },
+            { name: "Aditya Singh", online: false, avatar: "AD" },
+            { name: "Sanya Gupta", online: true, avatar: "SG" },
+            { name: "Riya Choudhury", online: false, avatar: "RC" },
+            { name: "Arjun Kumar", online: true, avatar: "AK" },
+            { name: "Ananya Reddy", online: false, avatar: "AR" }
+        ];
 
-    // Simulate chat functionality when a user is selected
-    $('#userList .user-item').on('click', function() {
-      var userName = $(this).data('username');
-      // Update chat header details
-      $('#chatUserName').text(userName);
-      // For demo, update DP and status based on user name (in real app, fetch from database)
-      var dpUrl = $(this).find('.avatar img').attr('src');
-      $('#chatUserDP').attr('src', dpUrl);
-      if(userName === "Rahul Mehra") {
-        $('#chatUserStatus').html('<span class="status-dot status-offline"></span> Offline • Last seen 10:30 AM');
-      } else {
-        $('#chatUserStatus').html('<span class="status-dot status-online"></span> Online');
-      }
-      $('#messageInput, #sendBtn').prop('disabled', false);
-      $('#chatMessages').empty();
-      addMessage('received', 'Hello, how are you?');
-      addMessage('sent', 'Hi, I was wondering about our meeting.');
-    });
+        
+        let chats = {
+            "Atul Pandey": [
+                { text: "Hey there!", sender: "received", time: "10:00 AM" },
+                { text: "Hi! How can I help?", sender: "sent", time: "10:01 AM" }
+            ],
+           
+        };
 
-    // Send a new message on button click
-    $('#sendBtn').on('click', function() {
-      var msg = $('#messageInput').val().trim();
-      if(msg !== '') {
-        addMessage('sent', msg);
-        $('#messageInput').val('');
-      }
-    });
+        
+        const usersSection = document.getElementById('usersSection');
+        const chatSection = document.getElementById('chatSection');
+        const usersList = document.getElementById('usersList');
+        const backBtn = document.getElementById('backBtn');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-    // Allow pressing Enter to send message
-    $('#messageInput').on('keypress', function(e) {
-      if(e.which === 13) {
-        e.preventDefault();
-        $('#sendBtn').click();
-      }
-    });
+        // Populate Users
+        users.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.className = 'user-item';
+            userElement.innerHTML = `
+                <div class="user-avatar">${user.avatar}</div>
+                <div class="user-info">
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-status">
+                        <div class="status-indicator ${user.online ? '' : 'offline'}"></div>
+                        ${user.online ? 'Online' : 'Offline'}
+                    </div>
+                </div>
+            `;
+            
+            userElement.addEventListener('click', () => openChat(user));
+            usersList.appendChild(userElement);
+        });
 
-    // Function to simulate adding a message bubble to the chat
-    function addMessage(type, content) {
-      var messageDiv = $('<div class="message"></div>');
-      messageDiv.addClass(type === 'sent' ? 'sent' : 'received');
-      var timestamp = new Date().toLocaleTimeString();
-      messageDiv.html(content + '<div class="timestamp">' + timestamp + '</div>');
-      $('#chatMessages').append(messageDiv);
-      $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-      if(type === 'sent') {
-        setTimeout(function(){
-          messageDiv.find('.timestamp').append(' ✔✔');
-        }, 1000);
-      }
-    }
+       
+        function openChat(user) {
+            usersSection.style.display = 'none';
+            chatSection.style.display = 'flex';
+            
+            
+            document.getElementById('chatUserName').textContent = user.name;
+            document.getElementById('chatUserStatus').textContent = user.online ? 'Online' : 'Offline';
+            document.getElementById('chatAvatar').textContent = user.avatar;
 
-    // Handle file upload (demo only)
-    $('#fileInput').on('change', function(e) {
-      var file = e.target.files[0];
-      if(file) {
-        var fileLink = '<a href="' + URL.createObjectURL(file) + '" target="_blank" download>' + file.name + '</a>';
-        addMessage('sent', fileLink);
-      }
-    });
+            
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.innerHTML = '';
+            (chats[user.name] || []).forEach(msg => createMessageElement(msg));
+        }
 
-    // Profile update simulation (demo only)
-    $('#profileForm').on('submit', function(e) {
-      e.preventDefault();
-      var file = $('#profilePicture')[0].files[0];
-      if(file) {
-        var newDP = URL.createObjectURL(file);
-        $('#currentDP').attr('src', newDP);
-        // Update account icon with new DP
-        $('.account-icon img').attr('src', newDP);
-        // Close modal
-        $('#profileModal').modal('hide');
-      }
-    });
-  </script>
+      
+        function createMessageElement(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.sender}`;
+            messageDiv.innerHTML = `
+                <div>${message.text}</div>
+                <div class="message-time">${message.time}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', e => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if(!text) return;
+
+            const currentUser = document.getElementById('chatUserName').textContent;
+            const newMessage = {
+                text: text,
+                sender: "sent",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            if(!chats[currentUser]) chats[currentUser] = [];
+            chats[currentUser].push(newMessage);
+            createMessageElement(newMessage);
+            messageInput.value = '';
+        }
+
+        backBtn.addEventListener('click', () => {
+            chatSection.style.display = 'none';
+            usersSection.style.display = 'block';
+        });
+
+        
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.user-item').forEach(item => {
+                const name = item.querySelector('.user-name').textContent.toLowerCase();
+                item.style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        });
+    </script>
 </body>
 </html>
