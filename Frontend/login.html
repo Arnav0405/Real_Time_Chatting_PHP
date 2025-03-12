@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +14,7 @@
       align-items: center;
       height: 100vh;
     }
+
     .card {
       width: 350px;
       border-radius: 20px;
@@ -21,43 +23,51 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       text-align: center;
     }
+
     .form-control {
       border-radius: 10px;
       border: 1px solid #66bb6a;
     }
-    .btn-primary, .btn-success {
+
+    .btn-primary,
+    .btn-success {
       background-color: #4caf50;
       border: none;
       border-radius: 10px;
       width: 100%;
     }
+
     .toggle-link {
       color: #388e3c;
       cursor: pointer;
     }
   </style>
 </head>
+
 <body>
   <div class="card" id="loginForm">
     <h2 class="text-success">Login</h2>
-    <form id="loginFormTag">
+    <form id="loginFormTag" action="/submit" method="POST">
       <input type="email" class="form-control mb-3" id="loginEmail" placeholder="Enter email" required>
       <input type="password" class="form-control mb-3" id="loginPassword" placeholder="Password" required>
       <button type="submit" class="btn btn-primary">Login</button>
     </form>
-    <p class="mt-3">Don't have an account? <span class="toggle-link" onclick="toggleForms('register')">Register here</span></p>
+    <p class="mt-3">Don't have an account? <span class="toggle-link" onclick="toggleForms('register')">Register
+        here</span></p>
   </div>
 
   <div class="card d-none" id="registerForm">
     <h2 class="text-success">Register</h2>
-    <form id="registerFormTag">
+    <form id="registerFormTag" action="/submit" method="POST">
       <input type="text" class="form-control mb-3" id="registerName" placeholder="Enter your name" required>
       <input type="email" class="form-control mb-3" id="registerEmail" placeholder="Enter email" required>
       <input type="password" class="form-control mb-3" id="registerPassword" placeholder="Password" required>
-      <input type="password" class="form-control mb-3" id="registerConfirmPassword" placeholder="Confirm Password" required>
+      <input type="password" class="form-control mb-3" id="registerConfirmPassword" placeholder="Confirm Password"
+        required>
       <button type="submit" class="btn btn-success">Register</button>
     </form>
-    <p class="mt-3">Already have an account? <span class="toggle-link" onclick="toggleForms('login')">Login here</span></p>
+    <p class="mt-3">Already have an account? <span class="toggle-link" onclick="toggleForms('login')">Login here</span>
+    </p>
   </div>
 
   <script>
@@ -66,5 +76,92 @@
       document.getElementById('registerForm').classList.toggle('d-none');
     }
   </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Handle Login Form Submission
+      document.getElementById("loginFormTag").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+
+        if (!email || !password) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        fetch("../Backend/api/login.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: email, // Assuming username is the email for login
+            password: password,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.message === "Login successful") {
+              alert("Login successful!");
+              // Redirect to the chat page or dashboard
+              window.location.href = "searchPage.html";
+            } else {
+              alert(data.error || "Invalid credentials");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+          });
+      });
+
+      // Handle Register Form Submission
+      document.getElementById("registerFormTag").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById("registerName").value.trim();
+        const email = document.getElementById("registerEmail").value.trim();
+        const password = document.getElementById("registerPassword").value.trim();
+        const confirmPassword = document.getElementById("registerConfirmPassword").value.trim();
+
+        if (!name || !email || !password || !confirmPassword) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          return;
+        }
+
+        fetch("../Backend/api/register.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: 'arnav',
+            email: 'arnav@gmail.com',
+            password: 'arnav',
+          }),
+        }).then((response) => response.json())
+          .then((data) => {
+            console.log(data)
+            if (data.message === "User Succesfully Registered") {
+              alert("Registration successful! You can now log in.");
+              toggleForms("login"); // Switch to login form after successful registration
+            } else {
+              alert(data.error || "Registration failed. Please try again.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+          });
+      });
+    });
+  </script>
 </body>
+
 </html>
