@@ -145,7 +145,15 @@
             email: 'arnav@gmail.com',
             password: 'arnav',
           }),
-        }).then((response) => response.json())
+        }).then((response) => {
+          if (!response.ok) {
+            // If the response status is not OK (e.g., 400, 409, 500), throw an error
+            return response.json().then((err) => {
+              throw new Error(err.error || "An error occurred.");
+            });
+          }
+          return response.json();
+        })
           .then((data) => {
             console.log(data)
             if (data.message === "User Succesfully Registered") {
@@ -157,7 +165,7 @@
           })
           .catch((error) => {
             console.error("Error:", error);
-            alert("An error occurred. Please try again.");
+            alert(error.message);
           });
       });
     });
