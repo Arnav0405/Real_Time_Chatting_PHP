@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,7 +27,7 @@
             height: 700px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             position: relative;
         }
@@ -120,7 +121,7 @@
             background: #d1d7db;
         }
 
-        
+
         .chat-section {
             display: none;
             flex-direction: column;
@@ -169,13 +170,13 @@
         .received {
             background: white;
             align-self: flex-start;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .sent {
             background: #d9fdd3;
             align-self: flex-end;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .message-time {
@@ -210,20 +211,28 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="main-container">
-        
+
         <div class="users-section" id="usersSection">
             <div class="search-bar">
                 <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
             </div>
             <div class="users-list" id="usersList">
-              
+
             </div>
         </div>
 
@@ -241,6 +250,8 @@
             </div>
             <div class="messages-container" id="messagesContainer"></div>
             <div class="input-container">
+                <label for="fileInput" class="file-input-label">Choose File</label>
+                <input type="file" id="fileInput" />
                 <input type="text" class="message-input" placeholder="Type a message..." id="messageInput">
                 <button class="send-button" id="sendBtn">Send</button>
             </div>
@@ -248,7 +259,7 @@
     </div>
 
     <script>
-      
+
         const users = [
             { name: "Atul Pandey", online: true, avatar: "AP" },
             { name: "Aarav Sharma", online: false, avatar: "AS" },
@@ -260,16 +271,16 @@
             { name: "Ananya Reddy", online: false, avatar: "AR" }
         ];
 
-        
+
         let chats = {
             "Atul Pandey": [
                 { text: "Hey there!", sender: "received", time: "10:00 AM" },
                 { text: "Hi! How can I help?", sender: "sent", time: "10:01 AM" }
             ],
-           
+
         };
 
-        
+
         const usersSection = document.getElementById('usersSection');
         const chatSection = document.getElementById('chatSection');
         const usersList = document.getElementById('usersList');
@@ -291,28 +302,28 @@
                     </div>
                 </div>
             `;
-            
+
             userElement.addEventListener('click', () => openChat(user));
             usersList.appendChild(userElement);
         });
 
-       
+
         function openChat(user) {
             usersSection.style.display = 'none';
             chatSection.style.display = 'flex';
-            
-            
+
+
             document.getElementById('chatUserName').textContent = user.name;
             document.getElementById('chatUserStatus').textContent = user.online ? 'Online' : 'Offline';
             document.getElementById('chatAvatar').textContent = user.avatar;
 
-            
+
             const messagesContainer = document.getElementById('messagesContainer');
             messagesContainer.innerHTML = '';
             (chats[user.name] || []).forEach(msg => createMessageElement(msg));
         }
 
-      
+
         function createMessageElement(message) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${message.sender}`;
@@ -324,15 +335,43 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        
+
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', e => {
-            if(e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter') sendMessage();
         });
 
         function sendMessage() {
+            const fileInput = document.getElementById('fileInput');
             const text = messageInput.value.trim();
-            if(!text) return;
+            if (!text) return;
+
+            if (!fileInput.files.length) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('message', messageInput.value);
+
+            fetch('../Backend/api/sendFile.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('File uploaded successfully!');
+                    } else {
+                        // console.log(formData.entries[0])
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                    alert('An error occurred while uploading the file.');
+                });
 
             const currentUser = document.getElementById('chatUserName').textContent;
             const newMessage = {
@@ -341,7 +380,7 @@
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
-            if(!chats[currentUser]) chats[currentUser] = [];
+            if (!chats[currentUser]) chats[currentUser] = [];
             chats[currentUser].push(newMessage);
             createMessageElement(newMessage);
             messageInput.value = '';
@@ -352,8 +391,8 @@
             usersSection.style.display = 'block';
         });
 
-        
-        document.getElementById('searchInput').addEventListener('input', function() {
+
+        document.getElementById('searchInput').addEventListener('input', function () {
             const query = this.value.toLowerCase();
             document.querySelectorAll('.user-item').forEach(item => {
                 const name = item.querySelector('.user-name').textContent.toLowerCase();
@@ -362,4 +401,5 @@
         });
     </script>
 </body>
+
 </html>

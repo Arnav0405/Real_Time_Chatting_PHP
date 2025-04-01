@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./static/styles.css">
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="chat-header">
+            <button class="back-button" onclick="window.location.href='userList.html'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="user-avatar" id="chatAvatar"></div>
+            <div class="user-info">
+                <div class="user-name" id="chatUserName"></div>
+                <div class="user-status" id="chatUserStatus"></div>
+            </div>
+        </div>
+        <div class="messages-container" id="messagesContainer"></div>
+        <div class="input-container">
+            <input type="text" class="message-input" placeholder="Type a message..." id="messageInput">
+            <button class="send-button" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+
+        // Fetch user details for the selected user
+        fetch(`../Backend/api/getUserDetails.php?userId=${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('chatUserName').textContent = data.username;
+                document.getElementById('chatAvatar').textContent = data.username[0];
+                document.getElementById('chatUserStatus').textContent = data.last_seen ? 'Online' : 'Offline';
+            })
+            .catch(error => console.error('Error:', error));
+
+        // Handle sending messages
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (!message) return;
+
+            // Send message via AJAX
+            fetch('../Backend/api/sendMessage.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiverId: userId, message })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        appendMessage(message, 'sent');
+                        document.getElementById('messageInput').value = '';
+                    } else {
+                        alert('Failed to send message.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function appendMessage(text, sender) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

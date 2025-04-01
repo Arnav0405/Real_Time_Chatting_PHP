@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./static/styles.css">
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+        </div>
+        <div class="users-list" id="usersList"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '../Backend/api/fetchUsers.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.error) {
+                        alert(response.error);
+                        return;
+                    }
+
+                    const userList = $('#usersList');
+                    response.users.forEach(user => {
+                        const userCard = `
+                            <div class="user-item" onclick="openChat(${user.id})">
+                                <div class="user-avatar">${user.username[0]}</div>
+                                <div class="user-info">
+                                    <div class="user-name">${user.username}</div>
+                                    <div class="user-status">
+                                        <div class="status-indicator ${user.last_seen ? '' : 'offline'}"></div>
+                                        ${user.last_seen ? 'Online' : 'Offline'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        userList.append(userCard);
+                    });
+                },
+                error: function () {
+                    alert('Failed to fetch users. Please try again.');
+                }
+            });
+        });
+
+        function openChat(userId) {
+            window.location.href = `chatPage.html?userId=${userId}`;
+        }
+    </script>
+</body>
+
+</html>
