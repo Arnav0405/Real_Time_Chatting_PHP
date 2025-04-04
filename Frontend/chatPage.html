@@ -10,9 +10,9 @@
 </head>
 
 <body>
-    <div class="main-container">
+    <div class="chat-section" id="chatSection">
         <div class="chat-header">
-            <button class="back-button" onclick="window.location.href='userList.html'">
+            <button class="back-button" id="backBtn" onclick="window.location.href='userList.html'">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <div class="user-avatar" id="chatAvatar"></div>
@@ -21,8 +21,11 @@
                 <div class="user-status" id="chatUserStatus"></div>
             </div>
         </div>
+
         <div class="messages-container" id="messagesContainer"></div>
         <div class="input-container">
+            <label for="fileInput" class="file-input-label">Choose File</label>
+            <input type="file" id="fileInput" style="display: none;" />
             <input type="text" class="message-input" placeholder="Type a message..." id="messageInput">
             <button class="send-button" id="sendBtn">Send</button>
         </div>
@@ -50,19 +53,26 @@
 
         function sendMessage() {
             const message = document.getElementById('messageInput').value.trim();
-            if (!message) return;
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!message && !file) return;
+            const formData = new FormData();
+            formData.append('receiverId', userId);
+            formData.append('message', message);
+            if (file) formData.append('file', file);
 
             // Send message via AJAX
             fetch('../Backend/api/sendMessage.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receiverId: userId, message })
+                body: formData
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         appendMessage(message, 'sent');
-                        document.getElementById('messageInput').value = '';
+                        message.value = '';
+                        fileInput.value = '';
                     } else {
                         alert('Failed to send message.');
                     }
@@ -70,12 +80,18 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        function appendMessage(text, sender) {
+        function appendMessage(text, sender, fileUrl = null) {
             const messagesContainer = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
+
+            let messageContent = `<div>${text}</div>`;
+            if (fileUrl) {
+                messageContent += `<a href="${fileUrl}" target="_blank">View File</a>`;
+            }
+
             messageDiv.innerHTML = `
-                <div>${text}</div>
+                ${messageContent}
                 <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
             `;
             messagesContainer.appendChild(messageDiv);
