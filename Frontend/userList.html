@@ -20,6 +20,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
+            let allUsers = []; // Store all users fetched from the backend
+
+            // Fetch users from the backend
             $.ajax({
                 url: '../Backend/api/fetchUsers.php',
                 method: 'GET',
@@ -30,32 +33,55 @@
                         return;
                     }
 
-                    const userList = $('#usersList');
-                    response.users.forEach(user => {
-                        const userCard = `
-                            <div class="user-item" onclick="openChat(${user.id})">
-                                <div class="user-avatar">${user.username[0]}</div>
-                                <div class="user-info">
-                                    <div class="user-name">${user.username}</div>
-                                    <div class="user-status">
-                                        <div class="status-indicator ${user.last_seen ? '' : 'offline'}"></div>
-                                        ${user.last_seen ? 'Online' : 'Offline'}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        userList.append(userCard);
-                    });
+                    allUsers = response.users; // Save the fetched users in a global variable
+                    renderUsers(allUsers); // Render all users initially
                 },
                 error: function () {
                     alert('Failed to fetch users. Please try again.');
                 }
             });
-        });
 
+            // Function to render users dynamically
+            function renderUsers(users) {
+                const userList = $('#usersList');
+                userList.empty(); // Clear the current user list
+
+                users.forEach(user => {
+                    const userCard = `
+                    <div class="user-item" onclick="openChat(${user.id})">
+                        <div class="user-avatar">${user.username[0]}</div>
+                        <div class="user-info">
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-status">
+                                <div class="status-indicator ${user.last_seen ? '' : 'offline'}"></div>
+                                ${user.last_seen ? 'Online' : 'Offline'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    userList.append(userCard);
+                });
+            }
+
+            // Search functionality
+            $('#searchInput').on('input', function () {
+                const query = $(this).val().toLowerCase(); // Get the search query and convert to lowercase
+
+                // Filter users based on the search query
+                const filteredUsers = allUsers.filter(user =>
+                    user.username.toLowerCase().includes(query)
+                );
+
+                // Render the filtered users
+                renderUsers(filteredUsers);
+            });
+
+            // Function to open chat with a specific user
+        });
         function openChat(userId) {
             window.location.href = `chatPage.html?userId=${userId}`;
         }
+
     </script>
 </body>
 

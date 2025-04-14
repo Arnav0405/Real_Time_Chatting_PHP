@@ -6,11 +6,345 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./static/styles.css">
+    <!-- <link rel="stylesheet" href="./static/styles.css"> -->
+    <style>
+        * {
+
+
+            margin: 0;
+
+
+            padding: 0;
+
+
+            box-sizing: border-box;
+
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+
+        }
+
+
+
+
+
+        body {
+
+
+            background: #f0f2f5;
+
+
+            height: 100vh;
+
+
+            display: flex;
+
+
+            justify-content: center;
+
+
+            align-items: center;
+
+
+        }
+
+
+
+
+
+        .chat-section {
+
+
+            display: none;
+
+
+            flex-direction: column;
+
+
+            height: 100%;
+
+
+            position: absolute;
+
+
+            top: 0;
+
+
+            left: 0;
+
+
+            right: 0;
+
+
+            background: white;
+
+
+        }
+
+
+
+
+
+        .chat-header {
+
+
+            padding: 15px;
+
+
+            background: #00a884;
+
+
+            display: flex;
+
+
+            align-items: center;
+
+
+            gap: 15px;
+
+
+            color: white;
+
+
+        }
+
+
+
+
+
+        .back-button {
+
+
+            background: none;
+
+
+            border: none;
+
+
+            color: white;
+
+
+            font-size: 20px;
+
+
+            cursor: pointer;
+
+
+        }
+
+
+
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            min-height: 75vh;
+            border-radius: 20px;
+
+        }
+
+        .messages-container {
+
+
+            flex: 1;
+
+
+            padding: 20px;
+
+
+            overflow-y: auto;
+
+
+            background: #efeae2;
+
+
+            display: flex;
+            /* min-height: 75vh; */
+
+            flex-direction: column;
+
+
+            gap: 15px;
+
+
+        }
+
+
+
+
+
+        .message {
+
+
+            max-width: 80%;
+
+
+            padding: 12px 16px;
+
+
+            border-radius: 12px;
+
+
+            animation: fadeIn 0.3s ease;
+
+
+        }
+
+
+
+
+
+        .received {
+
+
+            background: white;
+
+
+            align-self: flex-start;
+
+
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+
+        }
+
+
+
+
+
+        .sent {
+
+
+            background: #d9fdd3;
+
+
+            align-self: flex-end;
+
+
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+
+        }
+
+
+
+
+
+        .message-time {
+
+
+            font-size: 11px;
+
+
+            color: #667781;
+
+
+            margin-top: 5px;
+
+
+            text-align: right;
+
+
+        }
+
+
+
+
+
+        .input-container {
+
+
+            padding: 15px;
+
+
+            background: #f0f2f5;
+
+
+            display: flex;
+
+
+            gap: 10px;
+
+
+        }
+
+
+
+
+
+        .message-input {
+
+
+            flex: 1;
+
+
+            padding: 12px 20px;
+
+
+            border: none;
+
+
+            border-radius: 20px;
+
+
+            font-size: 14px;
+
+
+        }
+
+
+
+
+
+        .send-button {
+
+
+            background: #00a884;
+
+
+            color: white;
+
+
+            border: none;
+
+
+            padding: 12px 20px;
+
+
+            border-radius: 20px;
+
+
+            cursor: pointer;
+
+
+        }
+
+
+
+
+
+        @keyframes fadeIn {
+
+
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+
+        }
+    </style>
 </head>
 
 <body>
-    <div class="chat-section" id="chatSection">
+    <div class="chat-area" id="chatSection">
         <div class="chat-header">
             <button class="back-button" id="backBtn" onclick="window.location.href='userList.html'">
                 <i class="fas fa-arrow-left"></i>
@@ -22,7 +356,9 @@
             </div>
         </div>
 
-        <div class="messages-container" id="messagesContainer"></div>
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
         <div class="input-container">
             <label for="fileInput" class="file-input-label">Choose File</label>
             <input type="file" id="fileInput" style="display: none;" />
@@ -41,14 +377,75 @@
             .then(data => {
                 document.getElementById('chatUserName').textContent = data.username;
                 document.getElementById('chatAvatar').textContent = data.username[0];
-                document.getElementById('chatUserStatus').textContent = data.last_seen ? 'Online' : 'Offline';
+                document.getElementById('chatUserStatus').textContent = "Last Online: " + data.last_seen;
+
+                // initializeChat();
             })
             .catch(error => console.error('Error:', error));
+
+        // Initialize chat section
+        function initializeChat() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const receiverId = urlParams.get('userId');
+            // console.log(receiverId);
+            const userName = document.getElementById('chatUserName').textContent;
+            // console.log(userName);
+
+            if (userName && receiverId) {
+                document.getElementById('user-name').textContent = userName;
+                document.getElementById('user-avatar').textContent = userName.charAt(0);
+
+                // Fetch messages from the database
+                fetch(`../Backend/api/fetchMessages.php?receiverId=${receiverId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const messagesContainer = document.getElementById('messagesContainer');
+                            messagesContainer.innerHTML = ''; // Clear existing messages
+
+                            if (data.messages.length > 0) {
+                                data.messages.forEach(msg => {
+                                    addMessage(msg.text, msg.sender, msg.time, msg.fileUrl);
+                                });
+                            } else {
+                                // Show empty state if no messages exist
+                                messagesContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <div>💬</div>
+                                        <p>No messages yet. Start chatting!</p>
+                                    </div>
+                                `;
+                            }
+
+                            // Scroll to bottom
+                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        } else {
+                            alert('Failed to load messages: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching messages:', error);
+                        alert('An error occurred while loading messages.');
+                    });
+            } else {
+                // Show empty state if no user or receiver ID is available
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = `
+            <div class="empty-state">
+                <div>💬</div>
+                <p>Select a contact to start chatting</p>
+            </div>
+        `;
+            }
+        }
 
         // Handle sending messages
         document.getElementById('sendBtn').addEventListener('click', sendMessage);
         document.getElementById('messageInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
         function sendMessage() {
@@ -70,7 +467,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        appendMessage(message, 'sent');
+                        addMessage(message, 'sent');
                         message.value = '';
                         fileInput.value = '';
                     } else {
@@ -80,7 +477,7 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        function appendMessage(text, sender, fileUrl = null) {
+        function addMessage(text, sender, time, fileUrl = null) {
             const messagesContainer = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
@@ -91,12 +488,19 @@
             }
 
             messageDiv.innerHTML = `
-                ${messageContent}
-                <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            `;
+        ${messageContent}
+        <div class="message-time">${time}</div>
+    `;
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
+        messageInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        window.onload = initializeChat;
     </script>
 </body>
 

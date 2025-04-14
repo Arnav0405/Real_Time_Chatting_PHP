@@ -23,9 +23,19 @@ try {
     ]);
     
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($messages);
+
+    $formattedMessages = array_map(function ($msg) {
+        return [
+            'text' => $msg['message'],
+            'fileUrl' => $msg['file_url'],
+            'sender' => $msg['sender_id'] == $_SESSION['user_id'] ? 'sent' : 'received',
+            'time' => date('h:i A', strtotime($msg['sent_at']))
+        ];
+    }, $messages);
+
+    echo json_encode(['success' => true, 'messages' => $formattedMessages]);
 } catch (PDOException $e) {
     http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Error fetching messages: " . $e->getMessage()]);
+    echo json_encode(["status" => false, "message" => "Error fetching messages: " . $e->getMessage()]);
 }
 ?>
