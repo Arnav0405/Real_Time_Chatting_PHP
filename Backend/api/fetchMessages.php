@@ -9,17 +9,17 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $sender_id = $_SESSION['user_id'];
-$receiver_id = $_GET['receiver_id']; 
+$reciever_id = $_GET['reciever_id']; 
 
 try {
     $sql = "SELECT * FROM messages 
-            WHERE (sender_id = :sender_id AND receiver_id = :receiver_id) 
-               OR (sender_id = :receiver_id AND receiver_id = :sender_id)
+            WHERE (sender_id = :sender_id AND reciever_id = :reciever_id) 
+               OR (sender_id = :reciever_id AND reciever_id = :sender_id)
             ORDER BY sent_at ASC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ":sender_id" => $sender_id,
-        ":receiver_id" => $receiver_id
+        ":reciever_id" => $reciever_id
     ]);
     
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -32,6 +32,19 @@ try {
             'time' => date('h:i A', strtotime($msg['sent_at']))
         ];
     }, $messages);
+
+    // Update the status of messages from "sent" to "read" where the current user is the receiver
+    $updateSql = "UPDATE messages 
+                SET status = 'read' 
+                WHERE reciever_id = :user_id 
+                    AND sender_id = :other_user_id 
+                    AND status = 'sent'";
+    $updateStmt = $pdo->prepare($updateSql);
+    $updateStmt->execute([
+                            ":user_id" => $sender_id,
+                            ":other_user_id" => $reciever_id
+                        ]);
+
 
     echo json_encode(['success' => true, 'messages' => $formattedMessages]);
 } catch (PDOException $e) {

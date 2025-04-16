@@ -385,26 +385,25 @@
 
         // Initialize chat section
         function initializeChat() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const receiverId = urlParams.get('userId');
-            // console.log(receiverId);
+            console.log("Initializing chat...");
             const userName = document.getElementById('chatUserName').textContent;
-            // console.log(userName);
 
-            if (userName && receiverId) {
-                document.getElementById('user-name').textContent = userName;
-                document.getElementById('user-avatar').textContent = userName.charAt(0);
-
+            if (userId) {
+                // document.getElementById('user-name').textContent = userName;
+                // document.getElementById('user-avatar').textContent = userName.charAt(0);
+                console.log("User ID: " + userId);
+                // console.log("User Name: " + userName);
                 // Fetch messages from the database
-                fetch(`../Backend/api/fetchMessages.php?receiverId=${receiverId}`)
+                fetch(`../Backend/api/fetchMessages.php?reciever_id=${userId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             const messagesContainer = document.getElementById('messagesContainer');
                             messagesContainer.innerHTML = ''; // Clear existing messages
-
+                            console.log("Data is sucezz");
                             if (data.messages.length > 0) {
                                 data.messages.forEach(msg => {
+                                    console.log(msg);
                                     addMessage(msg.text, msg.sender, msg.time, msg.fileUrl);
                                 });
                             } else {
@@ -451,27 +450,27 @@
         function sendMessage() {
             const message = document.getElementById('messageInput').value.trim();
             const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-
-            if (!message && !file) return;
             const formData = new FormData();
-            formData.append('receiverId', userId);
+            formData.append('receiver_id', userId); // Include receiver ID
             formData.append('message', message);
-            if (file) formData.append('file', file);
 
-            // Send message via AJAX
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]); // Include file if selected
+            }
+
             fetch('../Backend/api/sendMessage.php', {
                 method: 'POST',
                 body: formData
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        addMessage(message, 'sent');
-                        message.value = '';
-                        fileInput.value = '';
+                    console.log()
+                    if (data.status === "success") {
+                        addMessage(message, 'sent', data.fileUrl); // Pass file URL if applicable
+                        document.getElementById('messageInput').value = '';
+                        document.getElementById('fileInput').value = '';
                     } else {
-                        alert('Failed to send message.');
+                        alert('Failed to send message: ' + data.message);
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -488,9 +487,9 @@
             }
 
             messageDiv.innerHTML = `
-        ${messageContent}
-        <div class="message-time">${time}</div>
-    `;
+                                        ${messageContent}
+                                        <div class="message-time">${time}</div>
+                                    `;
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -500,7 +499,10 @@
             this.style.height = (this.scrollHeight) + 'px';
         });
 
-        window.onload = initializeChat;
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded and parsed");
+            initializeChat();
+        });
     </script>
 </body>
 
