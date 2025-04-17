@@ -377,7 +377,8 @@
             .then(data => {
                 document.getElementById('chatUserName').textContent = data.username;
                 document.getElementById('chatAvatar').textContent = data.username[0];
-                document.getElementById('chatUserStatus').textContent = "Last Online: " + data.last_seen;
+                const parsedTime = new Date(data.last_seen);
+                document.getElementById('chatUserStatus').textContent = "Last Online: " + parsedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 // initializeChat();
             })
@@ -404,6 +405,7 @@
                             if (data.messages.length > 0) {
                                 data.messages.forEach(msg => {
                                     console.log(msg);
+                                    console.log("Server time: ", msg.time);
                                     addMessage(msg.text, msg.sender, msg.time, msg.fileUrl);
                                 });
                             } else {
@@ -451,14 +453,20 @@
             const message = document.getElementById('messageInput').value.trim();
             const fileInput = document.getElementById('fileInput');
             const formData = new FormData();
-            formData.append('receiver_id', userId); // Include receiver ID
+            formData.append('reciever_id', userId); // Include receiver ID
             formData.append('message', message);
-
+            console.log("SendMessage called");
             if (fileInput.files.length > 0) {
                 formData.append('file', fileInput.files[0]); // Include file if selected
+            } else {
+                formData.append('file', null);
             }
-
-            fetch('../Backend/api/sendMessage.php', {
+            console.log("FormData: ", formData);
+            if (message === '' && fileInput.files.length === 0) {
+                alert('Please enter a message or select a file to send.');
+                return;
+            }
+            fetch('http://localhost/WPL/WPL_Project/Backend/api/sendMessages.php', {
                 method: 'POST',
                 body: formData
             })
@@ -476,10 +484,20 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        function addMessage(text, sender, time, fileUrl = null) {
+        function addMessage(text, sender, serverTime = null, fileUrl = null) {
             const messagesContainer = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
+            // console, log("Time: ", serverTime);
+            let displayTime;
+            if (serverTime) {
+                // If server time is provided, parse and convert it to local time
+                const parsedTime = new Date(serverTime); // Parse server time string into a Date object
+                displayTime = parsedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                // If no server time is provided, use the current system time
+                displayTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
 
             let messageContent = `<div>${text}</div>`;
             if (fileUrl) {
@@ -488,7 +506,7 @@
 
             messageDiv.innerHTML = `
                                         ${messageContent}
-                                        <div class="message-time">${time}</div>
+                                        <div class="message-time">${displayTime}</div>
                                     `;
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
