@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
         
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
-            $fileUrl = '/uploaded/' . $fileName; // Relative path for the frontend
+            $fileUrl = 'http://localhost/WPL/WPL_Project/Backend/api/uploaded/' . $fileName; // Relative path for the frontend
             
         } else {
             http_response_code(502);
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
         ]);
 
         http_response_code(201);
-        echo json_encode(["status" => "success", "message" => "Message sent"]);
+        echo json_encode(["status" => "success", "message" => "Message sent", "file_url" => $fileUrl]);
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Error sending message: " . $e->getMessage()]);

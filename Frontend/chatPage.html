@@ -474,7 +474,7 @@
                 .then(data => {
                     console.log()
                     if (data.status === "success") {
-                        addMessage(message, 'sent', data.fileUrl); // Pass file URL if applicable
+                        addMessage(message, 'sent', null, data.file_url); // Pass file URL if applicable
                         document.getElementById('messageInput').value = '';
                         document.getElementById('fileInput').value = '';
                     } else {
@@ -488,7 +488,6 @@
             const messagesContainer = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
-            // console, log("Time: ", serverTime);
             let displayTime;
             if (serverTime) {
                 // If server time is provided, parse and convert it to local time
@@ -501,6 +500,8 @@
 
             let messageContent = `<div>${text}</div>`;
             if (fileUrl) {
+                console.log("File URL: ", fileUrl);
+                // If a file URL is provided, create a link to the file
                 messageContent += `<a href="${fileUrl}" target="_blank">View File</a>`;
             }
 
