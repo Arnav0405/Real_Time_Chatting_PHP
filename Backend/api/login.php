@@ -27,6 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
 
+            // Update the last seen time
+            $updateStatement = $pdo->prepare("UPDATE users SET last_seen = NOW() WHERE id = :user_id");
+            $updateStatement->execute(['user_id' => $user['id']]);
+
+
             http_response_code(201);
             echo json_encode(['message' => 'Login successful']);
         } else {
