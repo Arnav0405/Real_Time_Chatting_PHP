@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
         $fileName = uniqid('file_', true) . '_' . $sender_id . '_' . $reciever_id;
         $filePath = $uploadDir . $fileName;
         
-test
+
         if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
             $fileUrl = '/uploaded/' . $fileName; // Relative path for the frontend
             
