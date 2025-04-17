@@ -22,19 +22,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
     
     // File Uploading Part
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../../uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true); // Create directory if it doesn't exist
-        }
+        $uploadDir = __DIR__ . '/uploaded/';
+        // echo __DIR__. '/uploads/'; // Debugging
 
-        $fileName = uniqid('file_', true) . '_' . basename($_FILES['file']['name']);
+        $fileName = uniqid('file_', true) . '_' . $sender_id . '_' . $reciever_id;
         $filePath = $uploadDir . $fileName;
+        
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
-            $fileUrl = '/uploads/' . $fileName; // Relative path for the frontend
+            $fileUrl = '/uploaded/' . $fileName; // Relative path for the frontend
+            
         } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Failed to save file']);
+            http_response_code(502);
+            echo $_FILES['file']['tmp_name'];
+            echo $filePath;
+            echo json_encode(['error' => false, 'message' => 'Failed to save file']);
             exit;
         }
     }
