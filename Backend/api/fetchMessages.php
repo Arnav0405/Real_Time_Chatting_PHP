@@ -29,7 +29,7 @@ try {
             'text' => $msg['message'],
             'fileUrl' => $msg['file_url'],
             'sender' => $msg['sender_id'] == $_SESSION['user_id'] ? 'sent' : 'received',
-            'time' => date('h:i A', strtotime($msg['sent_at']))
+            'time' => $msg['sent_at'],
         ];
     }, $messages);
 
