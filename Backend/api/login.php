@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../includes/db.php';
 
 header('Content-Type: application/json');
@@ -19,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $statement = $pdo->prepare("SELECT id, username, password FROM users WHERE username = :username");
-        $statement->execute(params: ['username' => $username]);
+        $statement->execute(['username' => $username]);
         $user = $statement->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
