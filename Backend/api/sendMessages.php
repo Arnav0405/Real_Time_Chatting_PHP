@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
         
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
-            $fileUrl = 'http://localhost/WPL/WPL_Project/Backend/api/uploaded/' . $fileName; // Relative path for the frontend
+            $fileUrl = './Backend/api/uploaded/' . $fileName; // Relative path for the frontend
             
         } else {
             http_response_code(502);
